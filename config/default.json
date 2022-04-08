@@ -1,0 +1,5 @@
+{
+	"port": 5000,
+	"jwtSecret": "website builder 3991",
+	"db-url": "mongodb+srv://Tagir3991:CiLen47z%23L82zHs@main-claster.kdeku.mongodb.net/app?retryWrites=true&w=majority"
+}
