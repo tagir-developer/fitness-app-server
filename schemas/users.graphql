@@ -1,0 +1,36 @@
+enum ResponseStatuses {
+  SUCCESS
+  ERROR
+}
+
+type User {
+  id: ID!
+  userName: String
+  email: String!
+  password: String!
+  age: Int
+}
+
+type RegisterData {
+  accessToken: String!
+  refreshToken: String!
+  user: User
+  # status: Int!
+  status: ResponseStatuses!
+}
+
+input UserInput {
+  email: String!
+  password: String!
+}
+
+type Query {
+  getAllUsers: [User]!
+  # getUser(id: ID!): User!
+  getUser(email: String!): User!
+}
+
+type Mutation {
+  createUser(user: UserInput!): User!
+  register(user: UserInput!): RegisterData
+}

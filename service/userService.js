@@ -1,209 +1,238 @@
-const bcrypt = require('bcrypt')
-const User = require('../models/User')
-const uuid = require('uuid')
-const mailService = require('../service/mailService')
-const tokenService = require('../service/tokenService.js')
-const UserDto = require('../dtos/userDto')
-const Role = require('../models/Role')
-const ApiError = require('../exeptions/apiError')
-const gm = require('gm')
-const path = require('path')
+const bcrypt = require('bcrypt');
+const User = require('../models/user');
+const uuid = require('uuid');
+const mailService = require('../service/mailService');
+const tokenService = require('../service/tokenService');
+const ApiError = require('../exeptions/apiError');
+const UserDto = require('../dtos/userDto');
 
 class UserService {
+  async registration(email, password) {
+    const hashedPassword = await bcrypt.hash(password, 12);
 
-	async registration(email, password, name) {
+    const user = await User.create({ email, password: hashedPassword });
 
-		const hashedPassword = await bcrypt.hash(password, 12)
-		const activationLink = uuid.v4()
-		const userRole = await Role.findOne({ value: 'USER' })
-		const user = await User.create({ email, password: hashedPassword, name, activationLink, roles: [userRole.value] })
-		await mailService.sendActivationMail(email, `${process.env.API_URL}/api/auth/activate/${activationLink}`)
+    await mailService.sendSuccessfulRegistrationMail(email);
 
-		const userDto = new UserDto(user)
-		const tokens = tokenService.generateTokens({ ...userDto })
-		await tokenService.saveToken(userDto.id, tokens.refreshToken)
+    const userDto = new UserDto(user);
 
-		return { ...tokens, user: userDto }
+    const tokens = tokenService.generateTokens({ ...userDto });
+    await tokenService.saveToken(user.id, tokens.refreshToken);
 
-	}
+    return { ...tokens, user };
+  }
 
-	async login(email, password) {
-		const user = await User.findOne({ email })
-		const userDto = new UserDto(user)
-		const tokens = tokenService.generateTokens({ ...userDto })
-		await tokenService.saveToken(userDto.id, tokens.refreshToken)
+  //   async login(email, password) {
+  //     const user = await User.findOne({ email });
+  //     const userDto = new UserDto(user);
+  //     const tokens = tokenService.generateTokens({ ...userDto });
+  //     await tokenService.saveToken(userDto.id, tokens.refreshToken);
 
-		return { ...tokens, user: userDto }
-	}
+  //     return { ...tokens, user: userDto };
+  //   }
 
-	async logout(refreshToken) {
-		const token = await tokenService.removeToken(refreshToken)
-		return token
-	}
+  //   async logout(refreshToken) {
+  //     const token = await tokenService.removeToken(refreshToken);
+  //     return token;
+  //   }
 
-	async refresh(refreshToken) {
-		if (!refreshToken) {
-			throw ApiError.UnauthorizedError()
-		}
-		const userData = tokenService.validateRefreshToken(refreshToken)
-		const tokenFromDb = await tokenService.findToken(refreshToken)
-		if (!userData || !tokenFromDb) {
-			throw ApiError.UnauthorizedError()
-		}
-		const user = await User.findById(userData.id)
-		const userDto = new UserDto(user)
-		const tokens = tokenService.generateTokens({ ...userDto })
-		await tokenService.saveToken(userDto.id, tokens.refreshToken)
+  //   async refresh(refreshToken) {
+  //     if (!refreshToken) {
+  //       throw ApiError.UnauthorizedError();
+  //     }
+  //     const userData = tokenService.validateRefreshToken(refreshToken);
+  //     const tokenFromDb = await tokenService.findToken(refreshToken);
+  //     if (!userData || !tokenFromDb) {
+  //       throw ApiError.UnauthorizedError();
+  //     }
+  //     const user = await User.findById(userData.id);
+  //     const userDto = new UserDto(user);
+  //     const tokens = tokenService.generateTokens({ ...userDto });
+  //     await tokenService.saveToken(userDto.id, tokens.refreshToken);
 
-		return { ...tokens, user: userDto }
+  //     return { ...tokens, user: userDto };
+  //   }
 
-	}
+  //   async activate(activationLink) {
+  //     const user = await User.findOne({ activationLink });
+  //     if (!user) {
+  //       throw ApiError.BadRequest('Некорректная ссылка активации');
+  //     }
+  //     user.isActivated = true;
+  //     await user.save();
+  //   }
 
-	async activate(activationLink) {
-		const user = await User.findOne({ activationLink })
-		if (!user) {
-			throw ApiError.BadRequest('Некорректная ссылка активации')
-		}
-		user.isActivated = true
-		await user.save()
-	}
+  //   async reset(email, token) {
+  //     const candidate = await User.findOne({ email });
+  //     if (!candidate) {
+  //       throw ApiError.BadRequest('Пользователь с таким email не найден');
+  //     }
+  //     candidate.resetToken = token;
+  //     candidate.resetTokenExp = Date.now() + 30 * 60 * 1000;
+  //     await candidate.save();
+  //     mailService.sendResetPasswordMail(
+  //       candidate.email,
+  //       `${process.env.CLIENT_URL}/password/${token}`
+  //     );
+  //   }
 
-	async reset(email, token) {
-		const candidate = await User.findOne({ email })
-		if (!candidate) {
-			throw ApiError.BadRequest('Пользователь с таким email не найден')
-		}
-		candidate.resetToken = token
-		candidate.resetTokenExp = Date.now() + 30 * 60 * 1000
-		await candidate.save()
-		mailService.sendResetPasswordMail(candidate.email, `${process.env.CLIENT_URL}/password/${token}`)
-	}
+  //   async password(token) {
+  //     if (!token) {
+  //       throw ApiError.BadRequest(
+  //         'Ваша ссылка восстановления пароля недействительна или устарела, запросите новую ссылку',
+  //         'danger'
+  //       );
+  //     }
+  //     const user = await User.findOne({
+  //       resetToken: token,
+  //       resetTokenExp: { $gt: Date.now() },
+  //     });
+  //     if (!user) {
+  //       throw ApiError.BadRequest(
+  //         'Ваша ссылка восстановления пароля недействительна или устарела, запросите новую ссылку',
+  //         'danger'
+  //       );
+  //     }
+  //     const resetDto = {
+  //       userId: user._id.toString(),
+  //       token: token,
+  //     };
+  //     return { ...resetDto };
+  //   }
 
-	async password(token) {
-		if (!token) {
-			throw ApiError.BadRequest('Ваша ссылка восстановления пароля недействительна или устарела, запросите новую ссылку', 'danger')
-		}
-		const user = await User.findOne({
-			resetToken: token,
-			resetTokenExp: { $gt: Date.now() }
-		})
-		if (!user) {
-			throw ApiError.BadRequest('Ваша ссылка восстановления пароля недействительна или устарела, запросите новую ссылку', 'danger')
-		}
-		const resetDto = {
-			userId: user._id.toString(),
-			token: token
-		}
-		return { ...resetDto }
-	}
+  //   async newPassword(password, userId, token) {
+  //     const user = await User.findOne({
+  //       _id: userId,
+  //       resetToken: token,
+  //       resetTokenExp: { $gt: Date.now() },
+  //     });
 
-	async newPassword(password, userId, token) {
-		const user = await User.findOne({
-			_id: userId,
-			resetToken: token,
-			resetTokenExp: { $gt: Date.now() }
-		})
+  //     if (!user) {
+  //       throw ApiError.BadRequest(
+  //         'Ваша ссылка восстановления пароля недействительна или устарела, запросите новую ссылку',
+  //         'warning'
+  //       );
+  //     }
 
-		if (!user) {
-			throw ApiError.BadRequest('Ваша ссылка восстановления пароля недействительна или устарела, запросите новую ссылку', 'warning')
-		}
+  //     user.password = await bcrypt.hash(password, 12);
+  //     user.resetToken = undefined;
+  //     user.resetTokenExp = undefined;
+  //     await user.save();
+  //   }
 
-		user.password = await bcrypt.hash(password, 12)
-		user.resetToken = undefined
-		user.resetTokenExp = undefined
-		await user.save()
-	}
+  //   async changeEmail(userId, email) {
+  //     const user = await User.findById(userId);
 
-	async changeEmail(userId, email) {
-		const user = await User.findById(userId)
+  //     if (!user) {
+  //       throw ApiError.BadRequest(
+  //         'Произошла ошибка, пользователь не найден',
+  //         'danger'
+  //       );
+  //     }
 
-		if (!user) {
-			throw ApiError.BadRequest('Произошла ошибка, пользователь не найден', 'danger')
-		}
+  //     user.email = email;
+  //     await user.save();
+  //   }
 
-		user.email = email
-		await user.save()
-	}
+  //   async changeName(userId, name) {
+  //     const user = await User.findById(userId);
 
-	async changeName(userId, name) {
-		const user = await User.findById(userId)
+  //     if (!user) {
+  //       throw ApiError.BadRequest(
+  //         'Произошла ошибка, пользователь не найден',
+  //         'danger'
+  //       );
+  //     }
 
-		if (!user) {
-			throw ApiError.BadRequest('Произошла ошибка, пользователь не найден', 'danger')
-		}
+  //     user.name = name;
+  //     await user.save();
+  //   }
 
-		user.name = name
-		await user.save()
-	}
+  //   async changePassword(userId, password) {
+  //     const user = await User.findById(userId);
 
-	async changePassword(userId, password) {
-		const user = await User.findById(userId)
+  //     if (!user) {
+  //       throw ApiError.BadRequest(
+  //         'Произошла ошибка, пользователь не найден',
+  //         'danger'
+  //       );
+  //     }
 
-		if (!user) {
-			throw ApiError.BadRequest('Произошла ошибка, пользователь не найден', 'danger')
-		}
+  //     user.password = await bcrypt.hash(password, 12);
+  //     await user.save();
+  //   }
 
-		user.password = await bcrypt.hash(password, 12)
-		await user.save()
-	}
+  //   async getUserData(userId) {
+  //     const user = await User.findById(userId);
 
-	async getUserData(userId) {
-		const user = await User.findById(userId)
+  //     if (!user) {
+  //       throw ApiError.BadRequest(
+  //         'Произошла ошибка, пользователь не найден',
+  //         'danger'
+  //       );
+  //     }
 
-		if (!user) {
-			throw ApiError.BadRequest('Произошла ошибка, пользователь не найден', 'danger')
-		}
+  //     const userDto = new UserDto(user);
 
-		const userDto = new UserDto(user)
+  //     return { user: userDto };
+  //   }
 
-		return { user: userDto }
-	}
+  //   async uploadAvatar(userId, file, next) {
+  //     const fileName =
+  //       new Date().toISOString().replace(/:/g, '-') + '-' + file.originalname;
+  //     const avatarPath = path.join(
+  //       __dirname,
+  //       '..',
+  //       'images/avatars/thumb_150',
+  //       fileName
+  //     );
 
-	async uploadAvatar(userId, file, next) {
+  //     gm(file.path)
+  //       .resize(150, 150, '^')
+  //       .gravity('Center')
+  //       .extent(150, 150)
+  //       .noProfile()
+  //       .write(avatarPath, async function (err) {
+  //         if (err) {
+  //           console.log('Ошибка при загрузке аватара', err);
+  //           return next(
+  //             ApiError.BadRequest(
+  //               'При загрузке файла произошла ошибка. Попробуйте еще раз.',
+  //               'danger'
+  //             )
+  //           );
+  //         }
+  //       });
 
-		const fileName = new Date().toISOString().replace(/:/g, '-') + '-' + file.originalname
-		const avatarPath = path.join(__dirname, '..', 'images/avatars/thumb_150', fileName)
+  //     const user = await User.findById(userId);
+  //     if (!user) {
+  //       throw ApiError.BadRequest(
+  //         'Произошла ошибка, пользователь не найден',
+  //         'danger'
+  //       );
+  //     }
+  //     user.avatar = '/images/avatars/thumb_150/' + fileName;
+  //     await user.save();
+  //   }
 
-		gm(file.path)
-			.resize(150, 150, '^')
-			.gravity('Center')
-			.extent(150, 150)
-			.noProfile()
-			.write(avatarPath, async function (err) {
-				if (err) {
-					console.log('Ошибка при загрузке аватара', err)
-					return next(ApiError.BadRequest('При загрузке файла произошла ошибка. Попробуйте еще раз.', 'danger'))
-				}
+  //   async deleteAvatar(userId) {
+  //     const user = await User.findById(userId);
 
-			})
+  //     if (!user) {
+  //       throw ApiError.BadRequest(
+  //         'Произошла ошибка, пользователь не найден',
+  //         'danger'
+  //       );
+  //     }
 
-		const user = await User.findById(userId)
-		if (!user) {
-			throw ApiError.BadRequest('Произошла ошибка, пользователь не найден', 'danger')
-		}
-		user.avatar = '/images/avatars/thumb_150/' + fileName
-		await user.save()
+  //     user.avatar = '';
+  //     await user.save();
+  //   }
 
-	}
-
-	async deleteAvatar(userId) {
-		const user = await User.findById(userId)
-
-		if (!user) {
-			throw ApiError.BadRequest('Произошла ошибка, пользователь не найден', 'danger')
-		}
-
-		user.avatar = ''
-		await user.save()
-	}
-
-	async getAllUsers() {
-		const users = await User.find()
-		return users
-	}
-
-
-
+  //   async getAllUsers() {
+  //     const users = await User.find();
+  //     return users;
+  //   }
 }
 
-module.exports = new UserService()
+module.exports = new UserService();
