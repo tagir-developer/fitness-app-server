@@ -15,9 +15,17 @@ type RegisterData {
   accessToken: String!
   refreshToken: String!
   user: User
-  # status: Int!
   status: ResponseStatuses!
 }
+
+type LogoutData {
+  token: String!
+  status: ResponseStatuses!
+}
+
+# type AuthResponse {
+#   message: String!
+# }
 
 input UserInput {
   email: String!
@@ -32,5 +40,7 @@ type Query {
 
 type Mutation {
   createUser(user: UserInput!): User!
-  register(user: UserInput!): RegisterData
+  register(user: UserInput!): RegisterData!
+  login(user: UserInput!): RegisterData!
+  logout(refreshToken: String!): LogoutData!
 }

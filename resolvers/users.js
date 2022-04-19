@@ -2,13 +2,16 @@ const { ResponseStatusTypes } = require('../common/constants');
 const User = require('../models/user');
 const userService = require('../service/userService');
 const {
-  registerValidators,
   validateAndNormalizeRegisterData,
+  validateAndNormalizeLoginData,
 } = require('../validators/authValidators');
 
 const usersResolvers = {
   Query: {
-    getAllUsers: async () => {
+    getAllUsers: async (root, args, context) => {
+      if (!context.isAuthenticated) {
+        throw new Error(401, 'Пользователь не авторизован');
+      }
       try {
         return await User.findAll();
       } catch (e) {
@@ -16,7 +19,7 @@ const usersResolvers = {
         throw new Error('Не удалось получить пользователей');
       }
     },
-    getUser: async (root, { email }) => {
+    getUser: async (root, { email }, context) => {
       try {
         const user = await User.findOne({ where: { email } });
 
@@ -47,13 +50,9 @@ const usersResolvers = {
     },
     register: async (root, { user }) => {
       try {
-        // await registerValidators(user);
-
         const userData = await validateAndNormalizeRegisterData(user);
 
         const { email, password } = userData;
-
-        // ApiError.ValidationErrorChecking(req);
 
         const result = await userService.registration(email, password);
 
@@ -73,6 +72,44 @@ const usersResolvers = {
         throw new Error(
           'Не удалось зарегистрировать пользователя. ' + e?.message
         );
+      }
+    },
+    login: async (root, { user }) => {
+      try {
+        console.log('USER -----', user);
+        const userData = await validateAndNormalizeLoginData(user);
+
+        const { email } = userData;
+
+        const result = await userService.login(email);
+
+        // ! refresh токен запишем в asyncStorage react native указав дату просрочки
+        // res.cookie('refreshToken', userData.refreshToken, {
+        //   maxAge: 30 * 24 * 60 * 60 * 1000,
+        //   httpOnly: true,
+        // });
+
+        return {
+          accessToken: result.accessToken,
+          refreshToken: result.refreshToken,
+          user: result.user,
+          status: ResponseStatusTypes.success,
+        };
+      } catch (e) {
+        throw new Error('Ошибка авторизации. ' + e?.message);
+      }
+    },
+    logout: async (root, { refreshToken }) => {
+      try {
+        const result = await userService.logout(refreshToken);
+
+        // ? Нужно дать понять приложению, что токен удален и можно очистить asyncStorage смартфона
+        return {
+          deletedToken: result.token,
+          status: ResponseStatusTypes.success,
+        };
+      } catch (e) {
+        throw new Error('Не удалось выйти из приложения. ' + e?.message);
       }
     },
   },

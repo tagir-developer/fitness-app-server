@@ -18,6 +18,7 @@
   "dependencies": {
     "@graphql-tools/graphql-file-loader": "^7.3.8",
     "@graphql-tools/load": "^7.5.7",
+    "@graphql-tools/resolvers-composition": "^6.4.8",
     "@graphql-tools/schema": "^8.3.7",
     "bcrypt": "^5.0.1",
     "body-parser": "^1.20.0",

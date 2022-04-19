@@ -22,19 +22,21 @@ class UserService {
     return { ...tokens, user };
   }
 
-  //   async login(email, password) {
-  //     const user = await User.findOne({ email });
-  //     const userDto = new UserDto(user);
-  //     const tokens = tokenService.generateTokens({ ...userDto });
-  //     await tokenService.saveToken(userDto.id, tokens.refreshToken);
+  async login(email) {
+    const user = await User.findOne({ where: { email: email } });
 
-  //     return { ...tokens, user: userDto };
-  //   }
+    const userDto = new UserDto(user);
 
-  //   async logout(refreshToken) {
-  //     const token = await tokenService.removeToken(refreshToken);
-  //     return token;
-  //   }
+    const tokens = tokenService.generateTokens({ ...userDto });
+    await tokenService.saveToken(userDto.id, tokens.refreshToken);
+
+    return { ...tokens, user };
+  }
+
+  async logout(refreshToken) {
+    const token = await tokenService.removeToken(refreshToken);
+    return token;
+  }
 
   //   async refresh(refreshToken) {
   //     if (!refreshToken) {

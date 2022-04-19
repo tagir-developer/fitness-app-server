@@ -2,172 +2,80 @@ const { check } = require('express-validator');
 const bcrypt = require('bcrypt');
 const User = require('../models/User');
 const { isEmail, normalizeEmail, isLength } = require('validator');
+const {
+  isEmailAlreadyExist,
+  isUserPassword,
+} = require('./helpers/customValidationHelpers');
+const { validateValue } = require('./helpers/validateValue');
 
-const basicLoginErrorMessage = 'Вы ввели неверное имя пользователя или пароль';
+const AUTH_ERROR_MESSAGE = 'Вы ввели неверное имя пользователя или пароль';
 
 const validateAndNormalizeRegisterData = async (data) => {
-  const normalizedEmail = normalizeEmail(data.email);
+  const email = normalizeEmail(data.email);
+  const password = data.password.trim();
 
-  const stopValidationOnError = false;
+  await validateValue(email, [
+    {
+      validator: (value) => isEmail(value),
+      message: 'Введите корректный email',
+    },
+    {
+      validator: async (value) => !(await isEmailAlreadyExist(value)),
+      message: 'Такой email уже занят',
+    },
+  ]);
 
-  const errors = [];
-
-  const emailAlreadyExist = async () => {
-    const candidate = await User.findOne({ where: { email: normalizedEmail } });
-
-    if (candidate) {
-      return true;
-    }
-    return false;
-  };
-
-  const isEmailAlreadyExist = await emailAlreadyExist();
-
-  if (!isEmail(normalizedEmail)) {
-    const message = 'Введите корректный email';
-    errors.push(message);
-    if (stopValidationOnError) {
-      throw new Error(message);
-    }
-  }
-
-  if (!isLength(normalizedEmail, { min: 10, max: undefined })) {
-    const message = 'Email слишком короткий';
-    errors.push(message);
-    if (stopValidationOnError) {
-      throw new Error(message);
-    }
-  }
-
-  if (isEmailAlreadyExist) {
-    const message = 'Такой email уже занят';
-    errors.push(message);
-    if (stopValidationOnError) {
-      throw new Error(message);
-    }
-  }
-
-  if (errors.length > 0) {
-    console.log('VALIDATION ERRORS: ', errors);
-  }
-
-  if (!stopValidationOnError && errors.length > 0) {
-    const errorMessage = errors.join('. ');
-    throw new Error(errorMessage);
-  }
+  await validateValue(password, [
+    {
+      validator: (value) => isLength(value, { min: 5 }),
+      message: 'Пароль должен быть минимум 5 символов',
+    },
+  ]);
 
   const normalizedData = {
-    ...data,
-    email: normalizedEmail,
+    email,
+    password,
   };
 
   return normalizedData;
 };
 
-// [
-//   check('email')
-//     .isEmail()
-//     .normalizeEmail()
-//     .withMessage('Введите корректный email')
-//     .custom(async (value, { req }) => {
-//       try {
-//         const user = await User.findOne({ email: value });
+const validateAndNormalizeLoginData = async (data) => {
+  const email = normalizeEmail(data.email);
+  const password = data.password.trim();
 
-//         if (user) {
-//           return Promise.reject('Такой email уже занят');
-//         }
-//         return true;
-//       } catch (e) {
-//         console.log(e);
-//       }
-//     })
-//     .withMessage('Этот email уже занят'),
-//   check('password')
-//     .isLength({ min: 6 })
-//     .withMessage('Пароль должен быть минимум 6 символов')
-//     .isString()
-//     .withMessage('Пароль не должен состоять из одних цифр')
-//     .matches(/\d/)
-//     .withMessage('Пароль должен содержать хотя бы одну цифру'),
-//   check('passwordConfirm')
-//     .custom((value, { req }) => {
-//       if (value !== req.body.password) {
-//         return Promise.reject('Пароли должны совпадать');
-//       }
-//       return true;
-//     })
-//     .withMessage('Пароли должны совпадать'),
-//   check('name').optional().isString(),
-// ];
+  console.log('password', password);
 
-module.exports = { validateAndNormalizeRegisterData };
+  await validateValue(email, [
+    {
+      validator: (value) => isEmail(value),
+      message: 'Введите корректный email',
+    },
+    {
+      validator: async (value) => await isEmailAlreadyExist(value),
+      message: AUTH_ERROR_MESSAGE,
+    },
+  ]);
 
-// exports.registerValidators = [
-//   check('email')
-//     .isEmail()
-//     .normalizeEmail()
-//     .withMessage('Введите корректный email')
-//     .custom(async (value, { req }) => {
-//       try {
-//         const user = await User.findOne({ email: value });
+  await validateValue(password, [
+    {
+      validator: async (value) => await isUserPassword(value, email),
+      message: AUTH_ERROR_MESSAGE,
+    },
+  ]);
 
-//         if (user) {
-//           return Promise.reject('Такой email уже занят');
-//         }
-//         return true;
-//       } catch (e) {
-//         console.log(e);
-//       }
-//     })
-//     .withMessage('Этот email уже занят'),
-//   check('password')
-//     .isLength({ min: 6 })
-//     .withMessage('Пароль должен быть минимум 6 символов')
-//     .isString()
-//     .withMessage('Пароль не должен состоять из одних цифр')
-//     .matches(/\d/)
-//     .withMessage('Пароль должен содержать хотя бы одну цифру'),
-//   check('passwordConfirm')
-//     .custom((value, { req }) => {
-//       if (value !== req.body.password) {
-//         return Promise.reject('Пароли должны совпадать');
-//       }
-//       return true;
-//     })
-//     .withMessage('Пароли должны совпадать'),
-//   check('name').optional().isString(),
-// ];
+  const normalizedData = {
+    email,
+    password,
+  };
 
-// exports.loginValidators = [
-// 	check('email')
-// 		.exists().withMessage('Введите email')
-// 		.isEmail().normalizeEmail().withMessage('Введите корректный email')
-// 		.custom(async (value, { req }) => {
-// 			try {
-// 				const user = await User.findOne({ email: value })
-// 				if (!user) {
-// 					return Promise.reject(basicLoginErrorMessage)
-// 				}
-// 				return true
-// 			} catch (e) {
-// 				console.log(e)
-// 			}
-// 		}).withMessage(basicLoginErrorMessage),
-// 	check('password')
-// 		.exists().withMessage('Введите пароль')
-// 		.custom(async (value, { req }) => {
-// 			try {
-// 				const user = await User.findOne({ email: req.body.email })
-// 				const isMatch = await bcrypt.compare(value, user.password)
-// 				if (!isMatch) {
-// 					return Promise.reject(basicLoginErrorMessage)
-// 				}
-// 				return true
-// 			} catch (e) {
-// 				console.log(e)
-// 			}
-// 		}).withMessage(basicLoginErrorMessage)
-// ]
+  return normalizedData;
+};
+
+module.exports = {
+  validateAndNormalizeRegisterData,
+  validateAndNormalizeLoginData,
+};
 
 // exports.resetValidators = [
 // 	check('password')

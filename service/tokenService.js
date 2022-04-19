@@ -16,13 +16,12 @@ class TokenService {
   }
 
   async saveToken(userId, refreshToken) {
-    const tokenData = await Token.findOne({ userId: userId });
+    const tokenData = await Token.findOne({ where: { userId: userId } });
     if (tokenData) {
       tokenData.refreshToken = refreshToken;
       return await tokenData.save();
     }
-    console.log('Перед созданием нового токена -- userId', userId);
-    console.log('Перед созданием нового токена -- refreshToken', refreshToken);
+
     const token = await Token.create({ userId: userId, refreshToken });
     return token;
   }
@@ -45,8 +44,11 @@ class TokenService {
     }
   }
 
-  async removeToken(refreshToken) {
-    const tokenData = await Token.deleteOne({ refreshToken });
+  async removeToken(token) {
+    const tokenData = await Token.destroy({
+      where: { refreshToken: token },
+    });
+    // TODO: Проверить возвращает ли метод destroy token
     return tokenData;
   }
 
