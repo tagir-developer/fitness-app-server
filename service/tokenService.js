@@ -4,10 +4,10 @@ const Token = require('../models/token');
 class TokenService {
   generateTokens(payload) {
     const accessToken = jwt.sign(payload, process.env.JWT_ACCESS_SECRET, {
-      expiresIn: '60m',
+      expiresIn: '30s',
     });
     const refreshToken = jwt.sign(payload, process.env.JWT_REFRESH_SECRET, {
-      expiresIn: '30d',
+      expiresIn: '1m',
     });
     return {
       accessToken,
@@ -52,8 +52,8 @@ class TokenService {
     return tokenData;
   }
 
-  async findToken(refreshToken) {
-    const tokenData = await Token.findOne({ refreshToken });
+  async findToken(token) {
+    const tokenData = await Token.findOne({ where: { refreshToken: token } });
     return tokenData;
   }
 }

@@ -38,31 +38,22 @@ class UserService {
     return token;
   }
 
-  //   async refresh(refreshToken) {
-  //     if (!refreshToken) {
-  //       throw ApiError.UnauthorizedError();
-  //     }
-  //     const userData = tokenService.validateRefreshToken(refreshToken);
-  //     const tokenFromDb = await tokenService.findToken(refreshToken);
-  //     if (!userData || !tokenFromDb) {
-  //       throw ApiError.UnauthorizedError();
-  //     }
-  //     const user = await User.findById(userData.id);
-  //     const userDto = new UserDto(user);
-  //     const tokens = tokenService.generateTokens({ ...userDto });
-  //     await tokenService.saveToken(userDto.id, tokens.refreshToken);
+  async refresh(refreshToken) {
+    if (!refreshToken) {
+      throw ApiError.UnauthorizedError();
+    }
+    const userData = tokenService.validateRefreshToken(refreshToken);
+    const tokenFromDb = await tokenService.findToken(refreshToken);
+    if (!userData || !tokenFromDb) {
+      throw ApiError.UnauthorizedError();
+    }
+    const user = await User.findByPk(userData.id);
+    const userDto = new UserDto(user);
+    const tokens = tokenService.generateTokens({ ...userDto });
+    await tokenService.saveToken(userDto.id, tokens.refreshToken);
 
-  //     return { ...tokens, user: userDto };
-  //   }
-
-  //   async activate(activationLink) {
-  //     const user = await User.findOne({ activationLink });
-  //     if (!user) {
-  //       throw ApiError.BadRequest('Некорректная ссылка активации');
-  //     }
-  //     user.isActivated = true;
-  //     await user.save();
-  //   }
+    return { ...tokens, user: userDto };
+  }
 
   //   async reset(email, token) {
   //     const candidate = await User.findOne({ email });

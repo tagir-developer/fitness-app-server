@@ -86,6 +86,8 @@ app.use((req, res, next) => {
     next();
   };
 
+  console.log('Новый запрос - authorizationHeader', authorizationHeader);
+
   if (!authorizationHeader) {
     return isNotAuthenticatedHandler(req, next);
   }
