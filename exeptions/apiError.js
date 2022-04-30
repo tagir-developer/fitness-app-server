@@ -11,6 +11,7 @@ module.exports = class ApiError extends Error {
   }
 
   static UnauthorizedError() {
+    // Сообщение ошибки ('Unauthorized') должно совпадать с константой на клиенте
     return new ApiError(401, 'Unauthorized');
   }
 

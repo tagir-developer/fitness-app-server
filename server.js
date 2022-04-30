@@ -28,55 +28,6 @@ app.use(cookieParser());
 app.use(cors());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// app.use((req, res, next) => {
-//   // извлечь токен из заголовков запроса
-//   const token = req.header('Authorization');
-
-//   // TODO: верифицировать токен
-
-//   // TODO: привязать пользователя
-
-//   // позже мы можем обратиться к свойству isAuthenticated
-//   // в функциях распознавания, чтобы проверить,
-//   // был ли пользователь аутентифицирован
-//   req.isAuthenticated = Boolean(token);
-
-//   // вызовите следующее промежуточное программное обеспечение
-//   // когда пользователь либо аутентифицирован, либо нет
-//   next();
-// });
-
-// app.use((req, res, next) => {
-//   try {
-//     const authorizationHeader = req.headers.authorization;
-
-//     console.log('Значение - authorizationHeader', authorizationHeader);
-
-//     if (!authorizationHeader) {
-//       return next(new Error(401, 'Пользователь не авторизован'));
-//     }
-
-//     const newAccessToken = authorizationHeader.split(' ')[1];
-
-//     if (!newAccessToken) {
-//       return next(new Error(401, 'Пользователь не авторизован'));
-//     }
-
-//     const userData = tokenService.validateAccessToken(newAccessToken);
-
-//     if (!userData) {
-//       return next(new Error(401, 'Пользователь не авторизован'));
-//     }
-
-//     req.user = userData;
-//     req.isAuthenticated = true;
-
-//     next();
-//   } catch (e) {
-//     return next(new Error(401, 'Пользователь не авторизован'));
-//   }
-// });
-
 app.use((req, res, next) => {
   const authorizationHeader = req.headers.authorization;
 
@@ -85,8 +36,6 @@ app.use((req, res, next) => {
     req.isAuthenticated = false;
     next();
   };
-
-  console.log('Новый запрос - authorizationHeader', authorizationHeader);
 
   if (!authorizationHeader) {
     return isNotAuthenticatedHandler(req, next);

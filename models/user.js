@@ -23,6 +23,13 @@ const User = sequelize.define('User', {
   age: {
     type: DataTypes.INTEGER,
   },
+  resetToken: {
+    type: DataTypes.STRING,
+    unique: true,
+  },
+  resetTokenExp: {
+    type: DataTypes.STRING,
+  },
 });
 
 module.exports = User;

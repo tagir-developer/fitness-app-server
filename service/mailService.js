@@ -71,13 +71,33 @@ class MailService {
       {
         from: process.env.SMTP_USER,
         to,
-        subject: 'Восстановление пароля на ' + process.env.API_URL,
+        subject: 'Восстановление пароля в приложении fitness app',
         text: '',
         html: `
 			<div ${styles.main}>
 				<h1>От вас поступила заявка на восстановление пароля.</h1>
 				<p>Если вы не запрашивали восстановление пароля, проигнорируйте это письмо. Если запрос делали вы, то для сброса пароля перейдите по ссылке</p>
 				<a ${styles.a} href="${link}">Восстановить доступ</a>
+			</div>
+			`,
+      },
+      (error) => {
+        console.log(error.message);
+      }
+    );
+  }
+
+  async test(to) {
+    await this.transporter.sendMail(
+      {
+        from: process.env.SMTP_USER,
+        to,
+        subject: 'Тестовое письмо!',
+        text: '',
+        html: `
+			<div ${styles.main}>
+				<h1>Поздравляем! Вы успешно зарегистрировались в приложении fitness app.</h1>
+				<p>Надеемся, Вам понравится наше приложение ${process.env.API_URL}</p>
 			</div>
 			`,
       },

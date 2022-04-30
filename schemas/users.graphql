@@ -1,13 +1,7 @@
-enum ResponseStatuses {
-  SUCCESS
-  ERROR
-}
-
 type User {
   id: ID!
   userName: String
   email: String!
-  password: String!
   age: Int
 }
 
@@ -15,33 +9,52 @@ type RegisterData {
   accessToken: String!
   refreshToken: String!
   user: User
-  status: ResponseStatuses!
 }
 
 type LogoutData {
   token: String!
-  status: ResponseStatuses!
 }
-
-# type AuthResponse {
-#   message: String!
-# }
 
 input UserInput {
   email: String!
   password: String!
 }
 
+input ChangePasswordInput {
+  password: String!
+  confirmPassword: String!
+  token: String!
+}
+
+type PaswordReset {
+  message: String!
+}
+
+type TestMail {
+  message: String!
+}
+
+type changePasswordData {
+  message: String!
+}
+
+type getUserIdByTokenData {
+  userId: String!
+  token: String!
+}
+
 type Query {
   getAllUsers: [User]!
-  # getUser(id: ID!): User!
   getUser(email: String!): User!
 }
 
 type Mutation {
-  createUser(user: UserInput!): User!
   register(user: UserInput!): RegisterData!
   login(user: UserInput!): RegisterData!
   logout(refreshToken: String!): LogoutData!
   refresh(refreshToken: String!): RegisterData!
+  reset(email: String!): PaswordReset!
+  testMail(email: String!): TestMail!
+  # getUserIdByToken(token: String!): getUserIdByTokenData!
+  changePassword(data: ChangePasswordInput!): changePasswordData!
 }

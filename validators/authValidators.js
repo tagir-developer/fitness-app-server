@@ -1,6 +1,3 @@
-const { check } = require('express-validator');
-const bcrypt = require('bcrypt');
-const User = require('../models/User');
 const { isEmail, normalizeEmail, isLength } = require('validator');
 const {
   isEmailAlreadyExist,

@@ -1,4 +1,4 @@
-exports.ResponseStatusTypes = {
-  success: 'SUCCESS',
-  error: 'ERROR',
-};
+// exports.ResponseStatusTypes = {
+//   success: 'SUCCESS',
+//   error: 'ERROR',
+// };

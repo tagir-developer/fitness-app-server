@@ -2,6 +2,7 @@ const userService = require('../service/userService');
 const ApiError = require('../exeptions/apiError');
 const crypto = require('crypto');
 
+// ! Весь этот код потом удалим
 class authController {
   async registration(req, res, next) {
     try {
