@@ -69,7 +69,7 @@ app.use(
 async function start() {
   try {
     await sequelize.sync();
-    // await sequelize.sync({ force: true });
+    // await sequelize.sync({ force: true }); // Команда для принудительного изменения столбцов моделей в базе
     app.listen(PORT, () => {
       console.log(`App has been started on port ${PORT}...`);
     });

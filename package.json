@@ -17,6 +17,7 @@
   "license": "ISC",
   "dependencies": {
     "@graphql-tools/graphql-file-loader": "^7.3.8",
+    "@graphql-tools/import": "^6.7.0",
     "@graphql-tools/load": "^7.5.7",
     "@graphql-tools/resolvers-composition": "^6.4.8",
     "@graphql-tools/schema": "^8.3.7",

@@ -30,6 +30,9 @@ const User = sequelize.define('User', {
   resetTokenExp: {
     type: DataTypes.STRING,
   },
+  activeProgramId: {
+    type: DataTypes.STRING,
+  },
 });
 
 module.exports = User;

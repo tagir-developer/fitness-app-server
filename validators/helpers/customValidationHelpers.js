@@ -20,6 +20,20 @@ const isUserPassword = async (verifiedPassword, userEmail) => {
   return false;
 };
 
+const isStringArray = (value) => {
+  if (Array.isArray(value)) {
+    for (let item in value) {
+      if (typeof item !== 'string') {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  return false;
+};
+
 // const isResetTokenValid = async (token) => {
 //   const user = await User.findOne({
 //     where: {
@@ -37,4 +51,4 @@ const isUserPassword = async (verifiedPassword, userEmail) => {
 //   return true;
 // };
 
-module.exports = { isEmailAlreadyExist, isUserPassword };
+module.exports = { isEmailAlreadyExist, isUserPassword, isStringArray };

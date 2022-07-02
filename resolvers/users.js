@@ -15,9 +15,9 @@ const crypto = require('crypto');
 const usersResolvers = {
   Query: {
     getAllUsers: async (root, args, context) => {
-      if (!context.isAuthenticated) {
-        throw ApiError.UnauthorizedError();
-      }
+      // if (!context.isAuthenticated) {
+      //   throw ApiError.UnauthorizedError();
+      // }
       try {
         return await User.findAll();
       } catch (e) {

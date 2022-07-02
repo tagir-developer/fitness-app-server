@@ -1,0 +1,23 @@
+type Exercise {
+  id: ID!
+  name: String!
+  description: String!
+  previewImage: String!
+  descriptionImages: [String]!
+}
+
+input ExerciseInput {
+  name: String!
+  description: String!
+  previewImage: String!
+  descriptionImages: [String]!
+}
+
+type Query {
+  getAllExercises: [Exercise]!
+  getExerciseData(exerciseId: String!): Exercise!
+}
+
+type Mutation {
+  createExercise(exercise: ExerciseInput!): Exercise!
+}
