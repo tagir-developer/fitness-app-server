@@ -1,8 +1,8 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../utils/database');
-const User = require('./user');
+const TrainingDay = require('./trainingDay');
 
-const Program = sequelize.define('Program', {
+const DayExercise = sequelize.define('DayExercise', {
   id: {
     primaryKey: true,
     type: DataTypes.UUID,
@@ -15,15 +15,9 @@ const Program = sequelize.define('Program', {
   description: {
     type: DataTypes.STRING,
   },
-  isUserProgram: {
-    type: DataTypes.BOOLEAN,
-    allowNull: false,
-    defaultValue: false,
-  },
   previewImage: {
     type: DataTypes.STRING,
     allowNull: false,
-    defaultValue: '../../../assets/images/ui/card-icons/programs/basic.jpg',
   },
   descriptionImages: {
     type: DataTypes.STRING,
@@ -36,7 +30,7 @@ const Program = sequelize.define('Program', {
   },
 });
 
-User.hasMany(Program);
-Program.belongsTo(User);
+TrainingDay.hasMany(DayExercise);
+DayExercise.belongsTo(TrainingDay);
 
-module.exports = Program;
+module.exports = DayExercise;

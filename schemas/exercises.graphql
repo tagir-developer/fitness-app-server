@@ -3,18 +3,18 @@ type Exercise {
   name: String!
   description: String!
   previewImage: String!
-  descriptionImages: [String]!
+  descriptionImages: [String!]!
 }
 
 input ExerciseInput {
   name: String!
   description: String!
   previewImage: String!
-  descriptionImages: [String]!
+  descriptionImages: [String!]!
 }
 
 type Query {
-  getAllExercises: [Exercise]!
+  getAllExercises: [Exercise!]!
   getExerciseData(exerciseId: String!): Exercise!
 }
 

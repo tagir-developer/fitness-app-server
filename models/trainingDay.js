@@ -11,6 +11,7 @@ const TrainingDay = sequelize.define('TrainingDay', {
   },
   name: {
     type: DataTypes.STRING,
+    allowNull: false,
   },
 });
 

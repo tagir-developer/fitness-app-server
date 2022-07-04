@@ -3,17 +3,17 @@
 type TrainingDay {
   id: ID!
   name: String!
-  exercises: [Exercise]!
+  exercises: [Exercise!]!
 }
 
 type Program {
   id: ID!
   name: String!
-  description: String!
+  description: String
   isUserProgram: Boolean!
-  previewImage: String!
-  descriptionImages: [String]!
-  trainingDays: [TrainingDay]!
+  previewImage: String
+  descriptionImages: [String!]
+  trainingDays: [TrainingDay!]!
 }
 
 input DayExerciseInput {
@@ -22,21 +22,20 @@ input DayExerciseInput {
 
 input TrainingDayInput {
   name: String!
-  exercises: [DayExerciseInput]!
+  exercises: [DayExerciseInput!]!
 }
 
 input ProgramInput {
-  id: ID!
   name: String!
-  description: String!
-  isUserProgram: Boolean!
-  previewImage: String!
-  descriptionImages: [String]!
-  trainingDays: [TrainingDayInput]!
+  description: String
+  isUserProgram: Boolean
+  previewImage: String
+  descriptionImages: [String!]
+  trainingDays: [TrainingDayInput!]!
 }
 
 type Query {
-  getAllUserPrograms: [Program]!
+  getAllUserPrograms: [Program!]!
   getProgramById(programId: String!): Program!
 }
 

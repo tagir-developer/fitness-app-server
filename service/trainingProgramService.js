@@ -13,7 +13,7 @@ class TrainingProgramService {
       isUserProgram,
       previewImage,
       descriptionImages,
-      days,
+      trainingDays,
     } = programData;
 
     // создаем программу
@@ -26,8 +26,6 @@ class TrainingProgramService {
       descriptionImages,
     });
 
-    console.log('СОЗДАННАЯ ПРОГРАММА', program);
-
     if (!program) {
       throw ApiError.BadRequest('Не удалось создать программу', 'danger');
     }
@@ -35,19 +33,17 @@ class TrainingProgramService {
     // если передан userId и пользователь найден, значит программа пользовательская и привязываем к ней пользователя
     const user = await User.findByPk(userId);
 
-    console.log('ПОЛЬЗОВАТЕЛЬ', user);
-
     if (user) {
       await program.setUser(user);
     }
 
     // проходимся по массиву дней и создаем новые дни, привязанные к программе
-    for (const day in days) {
+    for (let i = 0; i < trainingDays.length; i++) {
+      const day = trainingDays[i];
+
       const createdDay = await TrainingDay.create({
         name: day.name,
       });
-
-      console.log('ДОБАВЛЕННЫЙ ДЕНЬ', createdDay);
 
       // если не удалось добавить день, удаляем программу и пробрасываем ошибку
       if (!createdDay) {
@@ -62,7 +58,8 @@ class TrainingProgramService {
       await createdDay.setProgram(program);
 
       // проходимся по всем упражнениям дня и привязываем их ко дню
-      for (const exercise in day.exercises) {
+      for (let j = 0; j < day.exercises.length; j++) {
+        const exercise = day.exercises[j];
         const exerciseData = await Exercise.findByPk(exercise.exerciseId);
 
         if (!exerciseData) {
@@ -75,7 +72,7 @@ class TrainingProgramService {
           );
         }
 
-        await createdDay.addExercises(exerciseData);
+        await createdDay.addExercise(exerciseData);
       }
 
       console.log(

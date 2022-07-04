@@ -41,13 +41,19 @@ const trainingProgramResolvers = {
   Mutation: {
     createProgram: async (root, { program }, context) => {
       try {
-        const program = await validateAndNormalizeProgramData(program);
+        // console.log('program BEFORE NORMALIZE', program);
+
+        const normalizedProgram = await validateAndNormalizeProgramData(
+          program
+        );
+
+        // console.log('program !!!!!!!!!!!!!', normalizedProgram);
 
         // TODO: Потом будем брать userID из context.user.id, пока замокаем
         const createdProgram = await trainingProgramService.createProgram(
           // context.user.id,
           TEST_USER_ID,
-          program
+          normalizedProgram
         );
 
         return createdProgram;

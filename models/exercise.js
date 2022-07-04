@@ -30,7 +30,8 @@ const Exercise = sequelize.define('Exercise', {
   },
 });
 
-TrainingDay.hasMany(Exercise);
-Exercise.belongsToMany(TrainingDay, { through: 'TrainingDayExercises' });
+// ! Пример связи многие ко многим - НЕ УДАЛЯТЬ
+// TrainingDay.belongsToMany(Exercise, { through: 'TrainingDayExercises' });
+// Exercise.belongsToMany(TrainingDay, { through: 'TrainingDayExercises' });
 
 module.exports = Exercise;
