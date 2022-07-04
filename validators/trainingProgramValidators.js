@@ -57,8 +57,6 @@ const validateAndNormalizeProgramData = async (program) => {
     for (let j = 0; j < day.exercises.length; j++) {
       const exercise = day.exercises[j];
 
-      // console.log('4444444444', exercise);
-
       await validateValue(exercise.exerciseId, [
         {
           validator: (value) => isUUID(value),

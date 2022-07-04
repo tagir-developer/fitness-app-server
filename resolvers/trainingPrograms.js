@@ -41,13 +41,9 @@ const trainingProgramResolvers = {
   Mutation: {
     createProgram: async (root, { program }, context) => {
       try {
-        // console.log('program BEFORE NORMALIZE', program);
-
         const normalizedProgram = await validateAndNormalizeProgramData(
           program
         );
-
-        // console.log('program !!!!!!!!!!!!!', normalizedProgram);
 
         // TODO: Потом будем брать userID из context.user.id, пока замокаем
         const createdProgram = await trainingProgramService.createProgram(
@@ -60,6 +56,46 @@ const trainingProgramResolvers = {
       } catch (e) {
         throw ApiError.BadRequest(
           'Не удалось создать программу тренировок. ' + e?.message
+        );
+      }
+    },
+    copyProgram: async (root, { programId }, context) => {
+      try {
+        return await trainingProgramService.copyProgram(programId);
+      } catch (e) {
+        throw ApiError.BadRequest(
+          'Не удалось скопировать программу тренировок. ' + e?.message
+        );
+      }
+    },
+    changeProgramName: async (root, { programId, name }, context) => {
+      try {
+        return await trainingProgramService.changeProgramName(programId, name);
+      } catch (e) {
+        throw ApiError.BadRequest(
+          'Не удалось изменить имя программы. ' + e?.message
+        );
+      }
+    },
+    deleteProgram: async (root, { programId }, context) => {
+      try {
+        return await trainingProgramService.deleteProgram(programId);
+      } catch (e) {
+        throw ApiError.BadRequest(
+          'Не удалось удалить программу тренировок. ' + e?.message
+        );
+      }
+    },
+    setActiveUserProgram: async (root, { programId }, context) => {
+      try {
+        // TODO: Потом будем брать userID из context.user.id, пока замокаем
+        return await trainingProgramService.setActiveUserProgram(
+          TEST_USER_ID,
+          programId
+        );
+      } catch (e) {
+        throw ApiError.BadRequest(
+          'Не удалось изменить активную программу пользователя. ' + e?.message
         );
       }
     },

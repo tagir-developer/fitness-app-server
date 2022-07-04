@@ -1,30 +1,25 @@
 const ApiError = require('../exeptions/apiError');
-const Exercise = require('../models/exercise');
+const DayExercise = require('../models/dayExercise');
 const Program = require('../models/program');
 const TrainingDay = require('../models/trainingDay');
 const User = require('../models/user');
 
 class TrainingProgramService {
   async createProgram(userId, programData) {
-    const {
-      id,
-      name,
-      description,
-      isUserProgram,
-      previewImage,
-      descriptionImages,
-      trainingDays,
-    } = programData;
+    // const {
+    //   id,
+    //   name,
+    //   description,
+    //   isUserProgram,
+    //   previewImage,
+    //   descriptionImages,
+    //   trainingDays,
+    // } = programData;
+
+    const { trainingDays, ...programFields } = programData;
 
     // создаем программу
-    const program = await Program.create({
-      id,
-      name,
-      description,
-      isUserProgram,
-      previewImage,
-      descriptionImages,
-    });
+    const program = await Program.create(programFields);
 
     if (!program) {
       throw ApiError.BadRequest('Не удалось создать программу', 'danger');
@@ -60,7 +55,12 @@ class TrainingProgramService {
       // проходимся по всем упражнениям дня и привязываем их ко дню
       for (let j = 0; j < day.exercises.length; j++) {
         const exercise = day.exercises[j];
-        const exerciseData = await Exercise.findByPk(exercise.exerciseId);
+
+        const exerciseData = await DayExercise.create({
+          exerciseId: exercise.exerciseId,
+          name: exercise.name,
+          muscleGroups: exercise.muscleGroups,
+        });
 
         if (!exerciseData) {
           await program.destroy();
@@ -72,33 +72,39 @@ class TrainingProgramService {
           );
         }
 
-        await createdDay.addExercise(exerciseData);
+        await exerciseData.setTrainingDay(createdDay);
       }
-
-      console.log(
-        'Изначальное кол-во упражнений для дня',
-        day.exercises.length
-      );
-      console.log(
-        'Кол-во добавленных упражнений',
-        await createdDay.countExercises()
-      );
     }
 
     return program;
   }
 
-  // async createProgram(userId, password) {
-  //   const user = await User.findById(userId);
-  //   if (!user) {
-  //     throw ApiError.BadRequest(
-  //       'Произошла ошибка, пользователь не найден',
-  //       'danger'
-  //     );
-  //   }
-  //   user.password = await bcrypt.hash(password, 12);
-  //   await user.save();
-  // }
+  async copyProgram(programId) {
+    const program = await Program.findByPk(programId);
+    const programCopy = { ...program, name: program.name + ' (Копия)' };
+    // ? Проверить привязывается ли к копии программы id пользователя
+    const newProgram = await Program.create(programCopy);
+    return newProgram;
+  }
+
+  async changeProgramName(programId, newProgramName) {
+    const program = await Program.findByPk(programId);
+    program.name = newProgramName;
+    await program.save();
+    return program;
+  }
+
+  async deleteProgram(programId) {
+    const program = await Program.findByPk(programId);
+    await program.destroy();
+    return 'Программа успешно удалена';
+  }
+
+  async setActiveUserProgram(userId, programId) {
+    const user = await User.findByPk(userId);
+    user.activeProgramId = programId;
+    return 'Программа пользователя изменена';
+  }
 }
 
 module.exports = new TrainingProgramService();

@@ -31,7 +31,7 @@ const User = sequelize.define('User', {
     type: DataTypes.STRING,
   },
   activeProgramId: {
-    type: DataTypes.STRING,
+    type: DataTypes.UUID,
   },
 });
 

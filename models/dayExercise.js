@@ -9,24 +9,17 @@ const DayExercise = sequelize.define('DayExercise', {
     allowNull: false,
     defaultValue: DataTypes.UUIDV4,
   },
+  exerciseId: {
+    type: DataTypes.UUID,
+    allowNull: false,
+  },
   name: {
-    type: DataTypes.STRING,
-  },
-  description: {
-    type: DataTypes.STRING,
-  },
-  previewImage: {
     type: DataTypes.STRING,
     allowNull: false,
   },
-  descriptionImages: {
+  muscleGroups: {
     type: DataTypes.STRING,
-    get: function () {
-      return JSON.parse(this.getDataValue('descriptionImages'));
-    },
-    set: function (val) {
-      return this.setDataValue('descriptionImages', JSON.stringify(val));
-    },
+    allowNull: false,
   },
 });
 

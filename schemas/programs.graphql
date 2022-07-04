@@ -1,9 +1,16 @@
 # import Exercise from "exercises.graphql"
 
+input DayExercise {
+  id: ID!
+  name: String!
+  exerciseId: String!
+  muscleGroups: String!
+}
+
 type TrainingDay {
   id: ID!
   name: String!
-  exercises: [Exercise!]!
+  exercises: [DayExercise!]!
 }
 
 type Program {
@@ -16,8 +23,17 @@ type Program {
   trainingDays: [TrainingDay!]!
 }
 
+type ProgramWithoutDays {
+  id: ID!
+  name: String!
+  isUserProgram: Boolean!
+  previewImage: String!
+}
+
 input DayExerciseInput {
+  name: String!
   exerciseId: String!
+  muscleGroups: String!
 }
 
 input TrainingDayInput {
@@ -40,9 +56,9 @@ type Query {
 }
 
 type Mutation {
-  createProgram(program: ProgramInput!): Program!
-  copyProgram(programId: String!): Program!
-  changeProgramName(programId: String!, name: String!): Program!
-  deleteProgram(programId: String!, name: String!): String!
+  createProgram(program: ProgramInput!): ProgramWithoutDays!
+  copyProgram(programId: String!): ProgramWithoutDays!
+  changeProgramName(programId: String!, name: String!): ProgramWithoutDays!
+  deleteProgram(programId: String!): String!
   setActiveUserProgram(programId: String!): String!
 }
