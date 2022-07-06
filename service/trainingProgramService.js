@@ -6,16 +6,6 @@ const User = require('../models/user');
 
 class TrainingProgramService {
   async createProgram(userId, programData) {
-    // const {
-    //   id,
-    //   name,
-    //   description,
-    //   isUserProgram,
-    //   previewImage,
-    //   descriptionImages,
-    //   trainingDays,
-    // } = programData;
-
     const { trainingDays, ...programFields } = programData;
 
     // создаем программу
@@ -62,6 +52,8 @@ class TrainingProgramService {
           muscleGroups: exercise.muscleGroups,
         });
 
+        console.log('exerciseData-----------', exerciseData);
+
         if (!exerciseData) {
           await program.destroy();
           await createdDay.destroy();
@@ -80,10 +72,12 @@ class TrainingProgramService {
   }
 
   async copyProgram(programId) {
-    const program = await Program.findByPk(programId);
-    const programCopy = { ...program, name: program.name + ' (Копия)' };
-    // ? Проверить привязывается ли к копии программы id пользователя
-    const newProgram = await Program.create(programCopy);
+    const program = await Program.findByPk(programId, { raw: true });
+
+    delete program.id;
+    program.name = program.name + ' (Копия)';
+
+    const newProgram = await Program.create(program);
     return newProgram;
   }
 
@@ -91,18 +85,22 @@ class TrainingProgramService {
     const program = await Program.findByPk(programId);
     program.name = newProgramName;
     await program.save();
+
     return program;
   }
 
   async deleteProgram(programId) {
     const program = await Program.findByPk(programId);
     await program.destroy();
+
     return 'Программа успешно удалена';
   }
 
   async setActiveUserProgram(userId, programId) {
     const user = await User.findByPk(userId);
     user.activeProgramId = programId;
+    await user.save();
+
     return 'Программа пользователя изменена';
   }
 }

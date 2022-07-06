@@ -15,7 +15,7 @@ const TrainingDay = sequelize.define('TrainingDay', {
   },
 });
 
-Program.hasMany(TrainingDay);
+Program.hasMany(TrainingDay, { as: 'days' });
 TrainingDay.belongsTo(Program);
 
 module.exports = TrainingDay;

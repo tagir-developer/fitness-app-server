@@ -1,11 +1,15 @@
 const ApiError = require('../exeptions/apiError');
+const DayExercise = require('../models/dayExercise');
 const Program = require('../models/program');
+const TrainingDay = require('../models/trainingDay');
+const User = require('../models/user');
 const trainingProgramService = require('../service/trainingProgramService');
+const { validateId } = require('../validators/helpers/customValidationHelpers');
 const {
   validateAndNormalizeProgramData,
 } = require('../validators/trainingProgramValidators');
 
-const TEST_USER_ID = '6b41c15e-c697-41a8-a9b8-ef507057bf27';
+const TEST_USER_ID = '26ef0f65-e9a8-4142-9706-3cc0e4563491';
 
 const trainingProgramResolvers = {
   Query: {
@@ -29,8 +33,17 @@ const trainingProgramResolvers = {
       // if (!context.isAuthenticated) {
       //   throw ApiError.UnauthorizedError();
       // }
+      validateId(programId);
       try {
-        return await Program.findByPk(programId);
+        const result = await Program.findByPk(programId, {
+          include: {
+            model: TrainingDay,
+            as: 'days',
+            include: { model: DayExercise, as: 'exercises' },
+          },
+        });
+        console.log('RESULT+++++++++++++', JSON.stringify(result, null, 2));
+        return result;
       } catch (e) {
         throw ApiError.BadRequest(
           'Не удалось загрузить данные тренировочной программы'
@@ -60,6 +73,7 @@ const trainingProgramResolvers = {
       }
     },
     copyProgram: async (root, { programId }, context) => {
+      validateId(programId);
       try {
         return await trainingProgramService.copyProgram(programId);
       } catch (e) {
@@ -69,6 +83,7 @@ const trainingProgramResolvers = {
       }
     },
     changeProgramName: async (root, { programId, name }, context) => {
+      validateId(programId);
       try {
         return await trainingProgramService.changeProgramName(programId, name);
       } catch (e) {
@@ -78,6 +93,7 @@ const trainingProgramResolvers = {
       }
     },
     deleteProgram: async (root, { programId }, context) => {
+      validateId(programId);
       try {
         return await trainingProgramService.deleteProgram(programId);
       } catch (e) {
@@ -87,6 +103,7 @@ const trainingProgramResolvers = {
       }
     },
     setActiveUserProgram: async (root, { programId }, context) => {
+      validateId(programId);
       try {
         // TODO: Потом будем брать userID из context.user.id, пока замокаем
         return await trainingProgramService.setActiveUserProgram(

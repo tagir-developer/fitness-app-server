@@ -1,6 +1,6 @@
 # import Exercise from "exercises.graphql"
 
-input DayExercise {
+type DayExercise {
   id: ID!
   name: String!
   exerciseId: String!
@@ -20,7 +20,7 @@ type Program {
   isUserProgram: Boolean!
   previewImage: String
   descriptionImages: [String!]
-  trainingDays: [TrainingDay!]!
+  days: [TrainingDay!]!
 }
 
 type ProgramWithoutDays {

@@ -1,6 +1,6 @@
 const User = require('../../models/user');
 const bcrypt = require('bcrypt');
-const { Op } = require('sequelize');
+const { isUUID } = require('validator');
 
 const isEmailAlreadyExist = async (verifiedEmail) => {
   const candidate = await User.findOne({ where: { email: verifiedEmail } });
@@ -34,21 +34,17 @@ const isStringArray = (value) => {
   return false;
 };
 
-// const isResetTokenValid = async (token) => {
-//   const user = await User.findOne({
-//     where: {
-//       resetToken: token,
-//       resetTokenExp: {
-//         [Op.gt]: Date.now(),
-//       },
-//     },
-//   });
+const validateId = (id, errorMessage) => {
+  if (!isUUID(id)) {
+    throw new Error(
+      errorMessage ?? 'Ошибка валидации. Вы указали неправильный id'
+    );
+  }
+};
 
-//   if (!user) {
-//     return false;
-//   }
-
-//   return true;
-// };
-
-module.exports = { isEmailAlreadyExist, isUserPassword, isStringArray };
+module.exports = {
+  isEmailAlreadyExist,
+  isUserPassword,
+  isStringArray,
+  validateId,
+};
