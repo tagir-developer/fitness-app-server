@@ -18,6 +18,7 @@ type Program {
   name: String!
   description: String
   isUserProgram: Boolean!
+  isUserActiveProgram: Boolean!
   previewImage: String
   descriptionImages: [String!]
   days: [TrainingDay!]!
@@ -27,21 +28,25 @@ type ProgramWithoutDays {
   id: ID!
   name: String!
   isUserProgram: Boolean!
+  isUserActiveProgram: Boolean!
   previewImage: String!
 }
 
 input DayExerciseInput {
+  id: ID!
   name: String!
   exerciseId: String!
   muscleGroups: String!
 }
 
 input TrainingDayInput {
+  id: ID!
   name: String!
   exercises: [DayExerciseInput!]!
 }
 
 input ProgramInput {
+  id: ID!
   name: String!
   description: String
   isUserProgram: Boolean
@@ -51,12 +56,13 @@ input ProgramInput {
 }
 
 type Query {
-  getAllUserPrograms: [Program!]!
+  getAllUserPrograms: [ProgramWithoutDays!]!
   getProgramById(programId: String!): Program!
 }
 
 type Mutation {
   createProgram(program: ProgramInput!): ProgramWithoutDays!
+  updateProgram(programId: String!, program: ProgramInput!): ProgramWithoutDays!
   copyProgram(programId: String!): ProgramWithoutDays!
   changeProgramName(programId: String!, name: String!): ProgramWithoutDays!
   deleteProgram(programId: String!): String!

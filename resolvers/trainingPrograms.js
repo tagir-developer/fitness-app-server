@@ -72,6 +72,25 @@ const trainingProgramResolvers = {
         );
       }
     },
+    updateProgram: async (root, { programId, program }, context) => {
+      try {
+        validateId(programId);
+        const normalizedProgram = await validateAndNormalizeProgramData(
+          program
+        );
+
+        const createdProgram = await trainingProgramService.updateProgram(
+          programId,
+          normalizedProgram
+        );
+
+        return createdProgram;
+      } catch (e) {
+        throw ApiError.BadRequest(
+          'Не удалось создать программу тренировок. ' + e?.message
+        );
+      }
+    },
     copyProgram: async (root, { programId }, context) => {
       validateId(programId);
       try {
@@ -105,11 +124,7 @@ const trainingProgramResolvers = {
     setActiveUserProgram: async (root, { programId }, context) => {
       validateId(programId);
       try {
-        // TODO: Потом будем брать userID из context.user.id, пока замокаем
-        return await trainingProgramService.setActiveUserProgram(
-          TEST_USER_ID,
-          programId
-        );
+        return await trainingProgramService.setActiveUserProgram(programId);
       } catch (e) {
         throw ApiError.BadRequest(
           'Не удалось изменить активную программу пользователя. ' + e?.message

@@ -23,7 +23,12 @@ const Program = sequelize.define('Program', {
   previewImage: {
     type: DataTypes.STRING,
     allowNull: false,
-    defaultValue: '../../../assets/images/ui/card-icons/programs/basic.jpg',
+    defaultValue: 'userProgram',
+  },
+  isUserActiveProgram: {
+    type: DataTypes.BOOLEAN,
+    allowNull: false,
+    defaultValue: false,
   },
   descriptionImages: {
     type: DataTypes.STRING,
