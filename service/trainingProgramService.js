@@ -1,4 +1,5 @@
 const { Op } = require('sequelize');
+const { v4 } = require('uuid');
 const ApiError = require('../exeptions/apiError');
 const DayExercise = require('../models/dayExercise');
 const Program = require('../models/program');
@@ -6,6 +7,16 @@ const TrainingDay = require('../models/trainingDay');
 const User = require('../models/user');
 
 class TrainingProgramService {
+  async getProgramById(programId) {
+    return await Program.findByPk(programId, {
+      include: {
+        model: TrainingDay,
+        as: 'days',
+        include: { model: DayExercise, as: 'exercises' },
+      },
+    });
+  }
+
   async createProgram(userId, programData) {
     const { trainingDays, ...programFields } = programData;
 
@@ -53,8 +64,6 @@ class TrainingProgramService {
           muscleGroups: exercise.muscleGroups,
         });
 
-        console.log('exerciseData-----------', exerciseData);
-
         if (!exerciseData) {
           await program.destroy();
           await createdDay.destroy();
@@ -85,8 +94,6 @@ class TrainingProgramService {
     let prevDayIds = await program
       .getDays({ attributes: ['id'], raw: true })
       .then((data) => data.map((day) => day.id));
-
-    // console.log('prevDayIds==========================', prevDayIds);
 
     // проходимся по массиву дней и создаем новые дни, привязанные к программе
     for (let i = 0; i < trainingDays.length; i++) {
@@ -162,7 +169,7 @@ class TrainingProgramService {
           },
         });
 
-        // удаляем из массива prevDayIds id обнного дня, чтобы в последующем выяснить, нужно ли удалять какой-либо из дней
+        // удаляем из массива prevDayIds id обновленного дня, чтобы в последующем выяснить, нужно ли удалять какой-либо из дней
         prevDayIds = prevDayIds.filter((dayId) => dayId !== day.id);
 
         // дня с таким id не было, поэтому создадим новый
@@ -203,30 +210,66 @@ class TrainingProgramService {
           await exerciseData.setTrainingDay(createdDay);
         }
       }
-
-      await prevDayIds.destroy({
-        where: {
-          id: {
-            [Op.or]: prevDayIds,
-          },
-        },
-      });
     }
+
+    await prevDayIds.destroy({
+      where: {
+        id: {
+          [Op.or]: prevDayIds,
+        },
+      },
+    });
 
     return program;
   }
 
-  async copyProgram(programId) {
-    const program = await Program.findByPk(programId, { raw: true });
+  async copyProgram(userId, programId) {
+    const program = await Program.findByPk(programId);
 
     if (!program) {
       throw ApiError.BadRequest('Не удалось найти программу по id', 'danger');
     }
 
-    delete program.id;
-    program.name = program.name + ' (Копия)';
+    const newProgramData = {};
 
-    const newProgram = await Program.create(program);
+    newProgramData.id = v4();
+    newProgramData.name = program.name + ' (Копия)';
+    newProgramData.description = program.description;
+    newProgramData.isUserActiveProgram = false;
+    newProgramData.previewImage = program.previewImage;
+    newProgramData.descriptionImages = program.descriptionImages;
+    newProgramData.trainingDays = [];
+
+    const programDays = await program.getDays();
+
+    for (let i = 0; i < programDays.length; i++) {
+      const day = programDays[i];
+
+      const dayCopy = {
+        id: v4(),
+        name: day.name,
+        exercises: [],
+      };
+
+      const dayExercises = await day.getExercises();
+
+      for (let j = 0; j < dayExercises.length; j++) {
+        const exercise = dayExercises[j];
+
+        const exerciseCopy = {
+          id: v4(),
+          name: exercise.name,
+          exerciseId: exercise.exerciseId,
+          muscleGroups: exercise.muscleGroups,
+        };
+
+        dayCopy.exercises = [...dayCopy.exercises, exerciseCopy];
+      }
+
+      newProgramData.trainingDays = [...newProgramData.trainingDays, dayCopy];
+    }
+
+    const newProgram = await this.createProgram(userId, newProgramData);
     return newProgram;
   }
 
@@ -257,6 +300,25 @@ class TrainingProgramService {
       );
     }
 
+    const programDays = await program.getDays();
+
+    for (let i = 0; i < programDays.length; i++) {
+      const dayToBeDeleted = programDays[i];
+
+      console.log('dayToBeDeleted', dayToBeDeleted);
+
+      const dayExercises = await dayToBeDeleted.getExercises();
+
+      for (let j = 0; j < dayExercises.length; j++) {
+        const exercise = dayExercises[j];
+
+        console.log('dayToBeDeleted', dayToBeDeleted);
+        await exercise.destroy();
+      }
+
+      await dayToBeDeleted.destroy();
+    }
+
     await program.destroy();
 
     return 'Программа успешно удалена';
@@ -268,15 +330,17 @@ class TrainingProgramService {
       where: { isUserActiveProgram: true },
     });
 
-    if (!program || !oldActiveProgram) {
+    if (!program) {
       throw ApiError.BadRequest('Не удалось найти программу по id', 'danger');
     }
 
     program.isUserActiveProgram = true;
     await program.save();
 
-    oldActiveProgram.isUserActiveProgram = false;
-    await oldActiveProgram.save();
+    if (oldActiveProgram) {
+      oldActiveProgram.isUserActiveProgram = false;
+      await oldActiveProgram.save();
+    }
 
     return 'Программа пользователя изменена';
   }

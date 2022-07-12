@@ -35,13 +35,14 @@ const trainingProgramResolvers = {
       // }
       validateId(programId);
       try {
-        const result = await Program.findByPk(programId, {
-          include: {
-            model: TrainingDay,
-            as: 'days',
-            include: { model: DayExercise, as: 'exercises' },
-          },
-        });
+        const result = await trainingProgramService.getProgramById(programId);
+        // const result = await Program.findByPk(programId, {
+        //   include: {
+        //     model: TrainingDay,
+        //     as: 'days',
+        //     include: { model: DayExercise, as: 'exercises' },
+        //   },
+        // });
         console.log('RESULT+++++++++++++', JSON.stringify(result, null, 2));
         return result;
       } catch (e) {
@@ -74,6 +75,8 @@ const trainingProgramResolvers = {
     },
     updateProgram: async (root, { programId, program }, context) => {
       try {
+        console.log('++++++++++programId', programId);
+        console.log('++++++++++program', program);
         validateId(programId);
         const normalizedProgram = await validateAndNormalizeProgramData(
           program
@@ -94,7 +97,10 @@ const trainingProgramResolvers = {
     copyProgram: async (root, { programId }, context) => {
       validateId(programId);
       try {
-        return await trainingProgramService.copyProgram(programId);
+        return await trainingProgramService.copyProgram(
+          TEST_USER_ID,
+          programId
+        );
       } catch (e) {
         throw ApiError.BadRequest(
           'Не удалось скопировать программу тренировок. ' + e?.message
