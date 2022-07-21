@@ -1,3 +1,4 @@
+const { Op } = require('sequelize');
 const ApiError = require('../exeptions/apiError');
 const DayExercise = require('../models/dayExercise');
 const Program = require('../models/program');
@@ -7,9 +8,10 @@ const trainingProgramService = require('../service/trainingProgramService');
 const { validateId } = require('../validators/helpers/customValidationHelpers');
 const {
   validateAndNormalizeProgramData,
+  validateProgramUpdateData,
 } = require('../validators/trainingProgramValidators');
 
-const TEST_USER_ID = '26ef0f65-e9a8-4142-9706-3cc0e4563491';
+const TEST_USER_ID = 'd8f72d79-cda4-49e2-8b01-da69fbe81d75';
 
 const trainingProgramResolvers = {
   Query: {
@@ -20,8 +22,16 @@ const trainingProgramResolvers = {
       try {
         // TODO: Потом будем брать userID из context.user.id, пока замокаем
         // return await trainingProgramService.getAllUserPrograms(testUserId);
+        // return await Program.findAll({
+        //   where: { userId: TEST_USER_ID },
+        // });
+
+        // ! потом будем в зависимости от настроек пользователя возвращать только программы пользователя или включая дефолтные
         return await Program.findAll({
-          where: { userId: TEST_USER_ID },
+          where: {
+            [Op.or]: [{ userId: TEST_USER_ID }, { isUserProgram: false }],
+          },
+          order: [['isUserProgram', 'DESC']],
         });
       } catch (e) {
         throw ApiError.BadRequest(
@@ -73,24 +83,19 @@ const trainingProgramResolvers = {
         );
       }
     },
-    updateProgram: async (root, { programId, program }, context) => {
+    updateProgram: async (root, { programId, trainingDays }, context) => {
       try {
-        console.log('++++++++++programId', programId);
-        console.log('++++++++++program', program);
-        validateId(programId);
-        const normalizedProgram = await validateAndNormalizeProgramData(
-          program
-        );
+        await validateProgramUpdateData(programId, trainingDays);
 
         const createdProgram = await trainingProgramService.updateProgram(
           programId,
-          normalizedProgram
+          trainingDays
         );
 
         return createdProgram;
       } catch (e) {
         throw ApiError.BadRequest(
-          'Не удалось создать программу тренировок. ' + e?.message
+          'Не удалось обновить программу тренировок. ' + e?.message
         );
       }
     },

@@ -62,7 +62,10 @@ type Query {
 
 type Mutation {
   createProgram(program: ProgramInput!): ProgramWithoutDays!
-  updateProgram(programId: String!, program: ProgramInput!): ProgramWithoutDays!
+  updateProgram(
+    programId: String!
+    trainingDays: [TrainingDayInput!]!
+  ): ProgramWithoutDays!
   copyProgram(programId: String!): ProgramWithoutDays!
   changeProgramName(programId: String!, name: String!): ProgramWithoutDays!
   deleteProgram(programId: String!): String!

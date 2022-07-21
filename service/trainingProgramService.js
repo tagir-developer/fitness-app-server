@@ -39,6 +39,7 @@ class TrainingProgramService {
       const day = trainingDays[i];
 
       const createdDay = await TrainingDay.create({
+        id: day.id,
         name: day.name,
       });
 
@@ -59,8 +60,9 @@ class TrainingProgramService {
         const exercise = day.exercises[j];
 
         const exerciseData = await DayExercise.create({
-          exerciseId: exercise.exerciseId,
+          id: exercise.id,
           name: exercise.name,
+          exerciseId: exercise.exerciseId,
           muscleGroups: exercise.muscleGroups,
         });
 
@@ -81,14 +83,14 @@ class TrainingProgramService {
     return program;
   }
 
-  async updateProgram(programId, programData) {
-    const { trainingDays, ...programFields } = programData;
-
-    // находим программу
+  async updateProgram(programId, trainingDays) {
     const program = await Program.findByPk(programId);
 
     if (!program) {
-      throw ApiError.BadRequest('Не удалось обновить программу', 'danger');
+      throw ApiError.BadRequest(
+        'Не удалось обновить программу. Не найдена программа с таким id',
+        'danger'
+      );
     }
 
     let prevDayIds = await program
@@ -111,23 +113,23 @@ class TrainingProgramService {
         }
 
         updatedDay.name = day.name;
-        await updatedDay.save();
 
-        const dayExercises = await updatedDay.getExercises({ raw: true });
+        let prevExercisesIds = await updatedDay
+          .getExercises({ attributes: ['id'], raw: true })
+          .then((data) => data.map((exercise) => exercise.id));
 
-        let prevExercisesIds = dayExercises.map((exercise) => exercise.id);
-
-        for (let j = 0; j < dayExercises.length; j++) {
-          const exercise = dayExercises[j];
+        for (let j = 0; j < day.exercises.length; j++) {
+          const exercise = day.exercises[j];
 
           // обновляем упражнение дня
           if (prevExercisesIds.includes(exercise.id)) {
             const updatedExercise = await DayExercise.findByPk(exercise.id);
 
+            console.log('Обновляемое упражнение ---', updatedExercise);
+
             if (!updatedExercise) {
-              await updatedDay.destroy();
               throw ApiError.BadRequest(
-                'Не удалось обновить программу. Не удалось добавить в программу новый тренировочный день',
+                'Не удалось обновить программу. Не удалось обновить тренировочный день',
                 'danger'
               );
             }
@@ -145,14 +147,13 @@ class TrainingProgramService {
           } else {
             const exerciseData = await DayExercise.create({
               name: exercise.name,
+              exerciseId: exercise.exerciseId,
               muscleGroups: exercise.muscleGroups,
             });
 
             if (!exerciseData) {
-              await updatedDay.destroy();
-
               throw ApiError.BadRequest(
-                'Не удалось обновить программу. Не удалось добавить в программу новый тренировочный день',
+                'Не удалось обновить программу. Не удалось добавить упражнение в тернировочный день',
                 'danger'
               );
             }
@@ -161,13 +162,17 @@ class TrainingProgramService {
           }
         }
 
-        await dayExercises.destroy({
-          where: {
-            id: {
-              [Op.or]: prevExercisesIds,
+        if (prevExercisesIds.length > 0) {
+          await DayExercise.destroy({
+            where: {
+              id: {
+                [Op.or]: prevExercisesIds,
+              },
             },
-          },
-        });
+          });
+        }
+
+        await updatedDay.save();
 
         // удаляем из массива prevDayIds id обновленного дня, чтобы в последующем выяснить, нужно ли удалять какой-либо из дней
         prevDayIds = prevDayIds.filter((dayId) => dayId !== day.id);
@@ -212,13 +217,24 @@ class TrainingProgramService {
       }
     }
 
-    await prevDayIds.destroy({
-      where: {
-        id: {
-          [Op.or]: prevDayIds,
+    // удаляем дни и привязанные упражнения
+    if (prevDayIds.length > 0) {
+      await DayExercise.destroy({
+        where: {
+          TrainingDayId: {
+            [Op.or]: prevDayIds,
+          },
         },
-      },
-    });
+      });
+
+      await TrainingDay.destroy({
+        where: {
+          id: {
+            [Op.or]: prevDayIds,
+          },
+        },
+      });
+    }
 
     return program;
   }
@@ -235,6 +251,7 @@ class TrainingProgramService {
     newProgramData.id = v4();
     newProgramData.name = program.name + ' (Копия)';
     newProgramData.description = program.description;
+    newProgramData.isUserProgram = true;
     newProgramData.isUserActiveProgram = false;
     newProgramData.previewImage = program.previewImage;
     newProgramData.descriptionImages = program.descriptionImages;
@@ -305,14 +322,11 @@ class TrainingProgramService {
     for (let i = 0; i < programDays.length; i++) {
       const dayToBeDeleted = programDays[i];
 
-      console.log('dayToBeDeleted', dayToBeDeleted);
-
       const dayExercises = await dayToBeDeleted.getExercises();
 
       for (let j = 0; j < dayExercises.length; j++) {
         const exercise = dayExercises[j];
 
-        console.log('dayToBeDeleted', dayToBeDeleted);
         await exercise.destroy();
       }
 
