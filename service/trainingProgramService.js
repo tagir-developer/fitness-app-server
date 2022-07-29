@@ -12,13 +12,30 @@ class TrainingProgramService {
       include: {
         model: TrainingDay,
         as: 'days',
-        include: { model: DayExercise, as: 'exercises' },
+        raw: true,
+        include: { model: DayExercise, as: 'exercises', raw: true },
       },
+      order: [
+        [{ model: TrainingDay, as: 'days' }, 'timestamp', 'ASC'],
+        [
+          { model: TrainingDay, as: 'days' },
+          { model: DayExercise, as: 'exercises' },
+          'timestamp',
+          'ASC',
+        ],
+      ],
     });
+    // return await Program.findByPk(programId, {
+    //   include: {
+    //     model: TrainingDay,
+    //     as: 'days',
+    //     raw: true,
+    //     include: { model: DayExercise, as: 'exercises', raw: true },
+    //   }});
   }
 
   async createProgram(userId, programData) {
-    const { trainingDays, ...programFields } = programData;
+    const { days, ...programFields } = programData;
 
     // создаем программу
     const program = await Program.create(programFields);
@@ -35,8 +52,8 @@ class TrainingProgramService {
     }
 
     // проходимся по массиву дней и создаем новые дни, привязанные к программе
-    for (let i = 0; i < trainingDays.length; i++) {
-      const day = trainingDays[i];
+    for (let i = 0; i < days.length; i++) {
+      const day = days[i];
 
       const createdDay = await TrainingDay.create({
         id: day.id,
@@ -113,6 +130,7 @@ class TrainingProgramService {
         }
 
         updatedDay.name = day.name;
+        updatedDay.timestamp = Date.now();
 
         let prevExercisesIds = await updatedDay
           .getExercises({ attributes: ['id'], raw: true })
@@ -125,8 +143,6 @@ class TrainingProgramService {
           if (prevExercisesIds.includes(exercise.id)) {
             const updatedExercise = await DayExercise.findByPk(exercise.id);
 
-            console.log('Обновляемое упражнение ---', updatedExercise);
-
             if (!updatedExercise) {
               throw ApiError.BadRequest(
                 'Не удалось обновить программу. Не удалось обновить тренировочный день',
@@ -136,6 +152,7 @@ class TrainingProgramService {
 
             updatedExercise.name = exercise.name;
             updatedExercise.muscleGroups = exercise.muscleGroups;
+            updatedExercise.timestamp = Date.now();
 
             await updatedExercise.save();
 
@@ -255,7 +272,7 @@ class TrainingProgramService {
     newProgramData.isUserActiveProgram = false;
     newProgramData.previewImage = program.previewImage;
     newProgramData.descriptionImages = program.descriptionImages;
-    newProgramData.trainingDays = [];
+    newProgramData.days = [];
 
     const programDays = await program.getDays();
 
@@ -283,7 +300,7 @@ class TrainingProgramService {
         dayCopy.exercises = [...dayCopy.exercises, exerciseCopy];
       }
 
-      newProgramData.trainingDays = [...newProgramData.trainingDays, dayCopy];
+      newProgramData.days = [...newProgramData.days, dayCopy];
     }
 
     const newProgram = await this.createProgram(userId, newProgramData);

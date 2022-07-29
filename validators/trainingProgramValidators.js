@@ -47,8 +47,8 @@ const validateAndNormalizeProgramData = async (program) => {
     ]);
   }
 
-  for (let i = 0; i < program.trainingDays.length; i++) {
-    const day = program.trainingDays[i];
+  for (let i = 0; i < program.days.length; i++) {
+    const day = program.days[i];
 
     await validateValue(day.name, [
       {

@@ -23,8 +23,18 @@ const DayExercise = sequelize.define(
       type: DataTypes.STRING,
       allowNull: false,
     },
+    timestamp: {
+      type: DataTypes.STRING,
+    },
   },
-  { timestamps: false }
+  { timestamps: false },
+  {
+    hooks: {
+      beforeCreate: (record) => {
+        record.dataValues.timestamp = Date.now();
+      },
+    },
+  }
 );
 
 TrainingDay.hasMany(DayExercise, { as: 'exercises' });

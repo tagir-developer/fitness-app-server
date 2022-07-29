@@ -2,3 +2,15 @@ enum ResponseStatuses {
   SUCCESS
   ERROR
 }
+
+type ArticleItem {
+  title: String
+  subTitle: String
+  text: String!
+}
+
+input ArticleItemInput {
+  title: String
+  subTitle: String
+  text: String!
+}

@@ -11,7 +11,7 @@ const {
   validateProgramUpdateData,
 } = require('../validators/trainingProgramValidators');
 
-const TEST_USER_ID = 'd8f72d79-cda4-49e2-8b01-da69fbe81d75';
+const TEST_USER_ID = '6815035c-7c6b-4ce2-ab4a-9b7ceef3ac99';
 
 const trainingProgramResolvers = {
   Query: {
@@ -31,7 +31,10 @@ const trainingProgramResolvers = {
           where: {
             [Op.or]: [{ userId: TEST_USER_ID }, { isUserProgram: false }],
           },
-          order: [['isUserProgram', 'DESC']],
+          order: [
+            ['timestamp', 'ASC'],
+            ['isUserProgram', 'DESC'],
+          ],
         });
       } catch (e) {
         throw ApiError.BadRequest(
@@ -53,7 +56,8 @@ const trainingProgramResolvers = {
         //     include: { model: DayExercise, as: 'exercises' },
         //   },
         // });
-        console.log('RESULT+++++++++++++', JSON.stringify(result, null, 2));
+        // console.log('RESULT+++++++++++++', JSON.stringify(result, null, 2));
+        console.log('RESULT+++++++++++++', result);
         return result;
       } catch (e) {
         throw ApiError.BadRequest(
@@ -85,6 +89,7 @@ const trainingProgramResolvers = {
     },
     updateProgram: async (root, { programId, trainingDays }, context) => {
       try {
+        console.log('UPDATE ----', trainingDays);
         await validateProgramUpdateData(programId, trainingDays);
 
         const createdProgram = await trainingProgramService.updateProgram(
