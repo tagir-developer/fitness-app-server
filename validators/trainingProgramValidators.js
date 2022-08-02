@@ -15,18 +15,18 @@ const validateAndNormalizeProgramData = async (program) => {
     },
   ]);
 
-  if (!program.isUserProgram && program.description) {
-    await validateValue(program.description, [
-      {
-        validator: (value) => !isEmpty(value),
-        message: 'Описание программы не может быть пустым',
-      },
-      {
-        validator: (value) => isLength(value, { min: 30, max: undefined }),
-        message: 'Описание программы должно быть длиннее 30 символов',
-      },
-    ]);
-  }
+  // if (!program.isUserProgram && program.description) {
+  //   await validateValue(program.description, [
+  //     {
+  //       validator: (value) => !isEmpty(value),
+  //       message: 'Описание программы не может быть пустым',
+  //     },
+  //     {
+  //       validator: (value) => isLength(value, { min: 30, max: undefined }),
+  //       message: 'Описание программы должно быть длиннее 30 символов',
+  //     },
+  //   ]);
+  // }
 
   if (program.previewImage) {
     await validateValue(program.previewImage, [

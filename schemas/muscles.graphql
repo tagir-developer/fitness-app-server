@@ -1,0 +1,27 @@
+# import ArticleItem from "common.graphql"
+
+type MuscleGroup {
+  id: ID!
+  name: String!
+  previewImage: String!
+}
+
+type Muscle {
+  id: ID!
+  name: String!
+  description: [ArticleItem!]
+  previewImage: String
+  descriptionImages: [String!]
+}
+
+type Query {
+  getMuscleGroups: [MuscleGroup!]!
+  getAllMuscles: [Muscle!]
+  getMusclesByMuscleGroupId(muscleGroupId: String!): [Muscle!]
+  getMuscleData(muscleId: String!): Muscle!
+}
+
+type Mutation {
+  createMuscleGroups: String!
+  createManyMuscles: String!
+}

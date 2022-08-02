@@ -1,5 +1,6 @@
 const ApiError = require('../exeptions/apiError');
 const Exercise = require('../models/exercise');
+const MuscleGroup = require('../models/muscleGroup');
 const exerciseService = require('../service/exerciseService');
 
 const exerciseResolvers = {
@@ -23,12 +24,12 @@ const exerciseResolvers = {
     },
   },
   Mutation: {
-    createExercise: async (root, { exercise }, context) => {
+    createManyExercises: async (root, params, context) => {
       try {
-        return await exerciseService.createExercise(exercise);
+        return await exerciseService.createManyExercises();
       } catch (e) {
         throw ApiError.BadRequest(
-          'Не удалось создать упражнение. ' + e?.message
+          'Не удалось зоздать упражнения. ' + e?.message
         );
       }
     },

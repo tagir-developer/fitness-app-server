@@ -1,5 +1,6 @@
 # import Exercise from "exercises.graphql"
 # import ArticleItemInput from "common.graphql"
+# import ArticleItem from "common.graphql"
 
 type DayExercise {
   id: ID!
@@ -17,7 +18,7 @@ type TrainingDay {
 type Program {
   id: ID!
   name: String!
-  description: String
+  description: [ArticleItem!]
   isUserProgram: Boolean!
   isUserActiveProgram: Boolean!
   previewImage: String
@@ -49,16 +50,21 @@ input TrainingDayInput {
 input ProgramInput {
   id: ID!
   name: String!
-  description: String
+  description: [ArticleItemInput!]
   isUserProgram: Boolean
   previewImage: String
   descriptionImages: [String!]
   days: [TrainingDayInput!]!
 }
 
+type MuscleGroup {
+  id: ID!
+}
+
 type Query {
   getAllUserPrograms: [ProgramWithoutDays!]!
   getProgramById(programId: String!): Program!
+  getMuscleGroups: [MuscleGroup!]!
 }
 
 type Mutation {

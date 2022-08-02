@@ -1,6 +1,7 @@
 const { Op } = require('sequelize');
 const ApiError = require('../exeptions/apiError');
 const DayExercise = require('../models/dayExercise');
+const MuscleGroup = require('../models/muscleGroup');
 const Program = require('../models/program');
 const TrainingDay = require('../models/trainingDay');
 const User = require('../models/user');
@@ -11,7 +12,7 @@ const {
   validateProgramUpdateData,
 } = require('../validators/trainingProgramValidators');
 
-const TEST_USER_ID = '6815035c-7c6b-4ce2-ab4a-9b7ceef3ac99';
+const TEST_USER_ID = '94cc9846-b1da-4e0e-9bb7-0775e23ef018';
 
 const trainingProgramResolvers = {
   Query: {
@@ -63,6 +64,14 @@ const trainingProgramResolvers = {
         throw ApiError.BadRequest(
           'Не удалось загрузить данные тренировочной программы'
         );
+      }
+    },
+    getMuscleGroups: async (root, data, context) => {
+      // ! тестовый запрос
+      try {
+        return await MuscleGroup.findAll();
+      } catch (e) {
+        throw ApiError.BadRequest('Не удалось загрузить мышечные группы');
       }
     },
   },

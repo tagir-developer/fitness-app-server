@@ -1,5 +1,7 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../utils/database');
+const ExerciseMuscles = require('./exerciseMuscles');
+const Muscle = require('./muscle');
 
 const Exercise = sequelize.define('Exercise', {
   id: {
@@ -12,7 +14,13 @@ const Exercise = sequelize.define('Exercise', {
     type: DataTypes.STRING,
   },
   description: {
-    type: DataTypes.STRING,
+    type: DataTypes.TEXT,
+    get: function () {
+      return JSON.parse(this.getDataValue('description'));
+    },
+    set: function (value) {
+      return this.setDataValue('description', JSON.stringify(value));
+    },
   },
   previewImage: {
     type: DataTypes.STRING,
@@ -29,8 +37,24 @@ const Exercise = sequelize.define('Exercise', {
   },
 });
 
-// ! Пример связи многие ко многим - НЕ УДАЛЯТЬ
-// TrainingDay.belongsToMany(Exercise, { through: 'TrainingDayExercises' });
-// Exercise.belongsToMany(TrainingDay, { through: 'TrainingDayExercises' });
+// чтобы отображать в детальке описания мышечной группы упражнения и наоборот
+Exercise.belongsToMany(Muscle, {
+  through: ExerciseMuscles,
+});
+Muscle.belongsToMany(Exercise, {
+  through: ExerciseMuscles,
+});
+
+// Exercise.belongsToMany(Muscle, {
+//   through: 'MusclesExercises',
+// });
+// Muscle.belongsToMany(Exercise, {
+//   through: 'MusclesExercises',
+// });
+
+Exercise.belongsToMany(Exercise, {
+  as: 'similarExercises',
+  through: 'SimilarExercises',
+});
 
 module.exports = Exercise;

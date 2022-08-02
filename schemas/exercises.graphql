@@ -1,23 +1,25 @@
+# import ArticleItem from "common.graphql"
+
 type Exercise {
   id: ID!
   name: String!
-  description: String!
+  description: [ArticleItem!]
   previewImage: String!
   descriptionImages: [String!]!
 }
 
-input ExerciseInput {
-  name: String!
-  description: String!
-  previewImage: String!
-  descriptionImages: [String!]!
-}
+# type MuscleGroup {
+#   id: ID!
+#   name: String!
+#   previewImage: String!
+# }
 
 type Query {
+  # getMuscleGroups: [MuscleGroup!]!
   getAllExercises: [Exercise!]!
   getExerciseData(exerciseId: String!): Exercise!
 }
 
 type Mutation {
-  createExercise(exercise: ExerciseInput!): Exercise!
+  createManyExercises: String!
 }

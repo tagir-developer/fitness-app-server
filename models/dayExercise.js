@@ -27,7 +27,6 @@ const DayExercise = sequelize.define(
       type: DataTypes.STRING,
     },
   },
-  { timestamps: false },
   {
     hooks: {
       beforeCreate: (record) => {

@@ -10,6 +10,7 @@ const { loadSchemaSync } = require('@graphql-tools/load');
 const { GraphQLFileLoader } = require('@graphql-tools/graphql-file-loader');
 const graphqlResolver = require('./resolvers');
 const tokenService = require('./service/tokenService');
+const Exercise = require('./models/exercise');
 
 const PORT = process.env.PORT || 5000;
 
@@ -70,6 +71,7 @@ async function start() {
   try {
     await sequelize.sync();
     // await sequelize.sync({ force: true }); // Команда для принудительного изменения столбцов моделей в базе
+
     app.listen(PORT, () => {
       console.log(`App has been started on port ${PORT}...`);
     });

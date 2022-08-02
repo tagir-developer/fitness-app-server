@@ -1,4 +1,5 @@
 const exerciseResolvers = require('./exercises');
+const muscleResolvers = require('./muscles');
 const trainingProgramResolvers = require('./trainingPrograms');
 const usersResolvers = require('./users');
 
@@ -9,6 +10,7 @@ const resolvers = [
   usersResolvers,
   trainingProgramResolvers,
   exerciseResolvers,
+  muscleResolvers,
 ];
 
 module.exports = resolvers;

@@ -7,6 +7,9 @@ const PASSWORD = '2QHLuqm4rUFR!95';
 const sequelize = new Sequelize(DB_NAME, USER_NAME, PASSWORD, {
   host: 'localhost',
   dialect: 'mysql',
+  define: {
+    timestamps: false,
+  },
 });
 
 module.exports = sequelize;

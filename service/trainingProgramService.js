@@ -25,6 +25,7 @@ class TrainingProgramService {
         ],
       ],
     });
+
     // return await Program.findByPk(programId, {
     //   include: {
     //     model: TrainingDay,
