@@ -57,14 +57,9 @@ input ProgramInput {
   days: [TrainingDayInput!]!
 }
 
-type MuscleGroup {
-  id: ID!
-}
-
 type Query {
   getAllUserPrograms: [ProgramWithoutDays!]!
   getProgramById(programId: String!): Program!
-  getMuscleGroups: [MuscleGroup!]!
 }
 
 type Mutation {

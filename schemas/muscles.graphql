@@ -1,4 +1,5 @@
 # import ArticleItem from "common.graphql"
+# import Exercise from "exercises.graphql"
 
 type MuscleGroup {
   id: ID!
@@ -12,12 +13,16 @@ type Muscle {
   description: [ArticleItem!]
   previewImage: String
   descriptionImages: [String!]
+  exercises: [Exercise!]
 }
 
 type Query {
   getMuscleGroups: [MuscleGroup!]!
-  getAllMuscles: [Muscle!]
-  getMusclesByMuscleGroupId(muscleGroupId: String!): [Muscle!]
+  getAllMuscles(searchText: String!): [Muscle!]
+  getMusclesByMuscleGroupId(
+    muscleGroupId: String!
+    searchText: String!
+  ): [Muscle!]
   getMuscleData(muscleId: String!): Muscle!
 }
 

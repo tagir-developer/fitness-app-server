@@ -49,29 +49,11 @@ const trainingProgramResolvers = {
       // }
       validateId(programId);
       try {
-        const result = await trainingProgramService.getProgramById(programId);
-        // const result = await Program.findByPk(programId, {
-        //   include: {
-        //     model: TrainingDay,
-        //     as: 'days',
-        //     include: { model: DayExercise, as: 'exercises' },
-        //   },
-        // });
-        // console.log('RESULT+++++++++++++', JSON.stringify(result, null, 2));
-        console.log('RESULT+++++++++++++', result);
-        return result;
+        return await trainingProgramService.getProgramById(programId);
       } catch (e) {
         throw ApiError.BadRequest(
           'Не удалось загрузить данные тренировочной программы'
         );
-      }
-    },
-    getMuscleGroups: async (root, data, context) => {
-      // ! тестовый запрос
-      try {
-        return await MuscleGroup.findAll();
-      } catch (e) {
-        throw ApiError.BadRequest('Не удалось загрузить мышечные группы');
       }
     },
   },

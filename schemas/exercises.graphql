@@ -1,4 +1,16 @@
 # import ArticleItem from "common.graphql"
+# import Muscle from "muscles.graphql"
+
+type WorkLevel {
+  muscleWorkLevel: Int!
+}
+
+type MuscleWithWorkLevel {
+  id: ID!
+  name: String!
+  previewImage: String!
+  workLevel: WorkLevel!
+}
 
 type Exercise {
   id: ID!
@@ -6,18 +18,17 @@ type Exercise {
   description: [ArticleItem!]
   previewImage: String!
   descriptionImages: [String!]!
+  similarExercises: [Exercise!]
+  muscles: [MuscleWithWorkLevel!]
 }
 
-# type MuscleGroup {
-#   id: ID!
-#   name: String!
-#   previewImage: String!
-# }
-
 type Query {
-  # getMuscleGroups: [MuscleGroup!]!
-  getAllExercises: [Exercise!]!
+  getAllExercises(searchText: String!): [Exercise!]!
   getExerciseData(exerciseId: String!): Exercise!
+  getExercisesByMuscleGroupId(
+    muscleGroupId: String!
+    searchText: String!
+  ): [Exercise!]
 }
 
 type Mutation {

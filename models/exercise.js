@@ -40,18 +40,14 @@ const Exercise = sequelize.define('Exercise', {
 // чтобы отображать в детальке описания мышечной группы упражнения и наоборот
 Exercise.belongsToMany(Muscle, {
   through: ExerciseMuscles,
+  as: 'muscles',
 });
 Muscle.belongsToMany(Exercise, {
   through: ExerciseMuscles,
+  as: 'exercises',
 });
 
-// Exercise.belongsToMany(Muscle, {
-//   through: 'MusclesExercises',
-// });
-// Muscle.belongsToMany(Exercise, {
-//   through: 'MusclesExercises',
-// });
-
+// для отображения похожих упражнений
 Exercise.belongsToMany(Exercise, {
   as: 'similarExercises',
   through: 'SimilarExercises',

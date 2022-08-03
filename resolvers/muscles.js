@@ -1,4 +1,5 @@
 const ApiError = require('../exeptions/apiError');
+const Exercise = require('../models/exercise');
 const Muscle = require('../models/muscle');
 const MuscleGroup = require('../models/muscleGroup');
 const muscleService = require('../service/muscleService');
@@ -6,13 +7,6 @@ const { validateId } = require('../validators/helpers/customValidationHelpers');
 
 const muscleResolvers = {
   Query: {
-    // getExerciseData: async (root, { exerciseId }, context) => {
-    //   try {
-    //     return await Exercise.findByPk(exerciseId);
-    //   } catch (e) {
-    //     throw ApiError.BadRequest('Не удалось загрузить данные упражнения');
-    //   }
-    // },
     getMuscleGroups: async (root, data, context) => {
       // if (!context.isAuthenticated) {
       //   throw ApiError.UnauthorizedError();
@@ -23,24 +17,32 @@ const muscleResolvers = {
         throw ApiError.BadRequest('Не удалось загрузить мышечные группы');
       }
     },
-    getAllMuscles: async (root, data, context) => {
+    getAllMuscles: async (root, { searchText }, context) => {
       // if (!context.isAuthenticated) {
       //   throw ApiError.UnauthorizedError();
       // }
       try {
-        return await Muscle.findAll();
+        return await muscleService.getAllMuscles(searchText);
+        // return await Muscle.findAll();
       } catch (e) {
         throw ApiError.BadRequest('Не удалось загрузить мышцы');
       }
     },
-    getMusclesByMuscleGroupId: async (root, { muscleGroupId }, context) => {
+    getMusclesByMuscleGroupId: async (
+      root,
+      { muscleGroupId, searchText },
+      context
+    ) => {
       // if (!context.isAuthenticated) {
       //   throw ApiError.UnauthorizedError();
       // }
       validateId(muscleGroupId);
 
       try {
-        return await muscleService.getMusclesByMuscleGroupId(muscleGroupId);
+        return await muscleService.getMusclesByMuscleGroupId(
+          muscleGroupId,
+          searchText
+        );
       } catch (e) {
         throw ApiError.BadRequest('Не удалось загрузить мышцы');
       }
@@ -52,8 +54,9 @@ const muscleResolvers = {
       validateId(muscleId);
 
       try {
-        // return await muscleService.getMusclesByMuscleGroupId(muscleGroupId);
-        return await Muscle.findByPk(muscleId);
+        return await Muscle.findByPk(muscleId, {
+          include: { model: Exercise, as: 'exercises' },
+        });
       } catch (e) {
         throw ApiError.BadRequest('Не удалось загрузить данные мышцы');
       }
