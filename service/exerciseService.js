@@ -16,10 +16,41 @@ class ExerciseService {
             [Op.substring]: searchText,
           },
         },
+        include: {
+          model: Muscle,
+          as: 'muscles',
+          through: {
+            model: ExerciseMuscles,
+            as: 'workLevel',
+            attributes: ['muscleWorkLevel'],
+          },
+        },
       });
     }
 
-    return await Exercise.findAll();
+    return await Exercise.findAll({
+      include: {
+        model: Muscle,
+        as: 'muscles',
+        through: {
+          model: ExerciseMuscles,
+          as: 'workLevel',
+          attributes: ['muscleWorkLevel'],
+        },
+      },
+    });
+
+    // if (searchText) {
+    //   return await Exercise.findAll({
+    //     where: {
+    //       name: {
+    //         [Op.substring]: searchText,
+    //       },
+    //     },
+    //   });
+    // }
+
+    // return await Exercise.findAll();
   }
 
   async getExerciseData(exerciseId) {
